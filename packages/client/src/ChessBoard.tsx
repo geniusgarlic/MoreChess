@@ -14,7 +14,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ renderSquare }) => {
         cols.map((_, colIndex) => (
           <div 
             key={`${rowIndex}-${colIndex}`} 
-            className={`h-20 w-20 border-2 box-content ${((rowIndex + colIndex) % 2 === 0) ? 'bg-white' : 'bg-black'}`}
+            className={`h-20 w-20 border-2 box-content ${((rowIndex + colIndex) % 2 === 0) ? 'bg-white' : 'bg-gray-700'}`}
           >
             {renderSquare(7 - rowIndex, colIndex)}
           </div>

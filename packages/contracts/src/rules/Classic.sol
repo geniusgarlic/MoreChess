@@ -13,8 +13,41 @@ contract Classic is IRule{
     function startingPosition() public pure override returns (bytes32[64] memory) {
         bytes32[64] memory data;
         for (uint8 i = 0; i < 64; i++) {
-            if ((i >= 0 && i <= 7) || (i >= 56 && i <= 63)) {
-                data[i] = "Pawn";
+            if (i >= 8 && i <= 15) {
+                data[i] = "0 Pawn";
+            }
+            else if (i >= 48 && i <= 55) {
+                data[i] = "1 Pawn";
+            } 
+            else if (i == 0 || i == 7) {
+                data[i] = "0 Rook";
+            }
+            else if (i == 56 || i == 63) {
+                data[i] = "1 Rook";
+            }
+            else if (i == 1 || i == 6) {
+                data[i] = "0 Knight";
+            }
+            else if (i == 57 || i == 62) {
+                data[i] = "1 Knight";
+            }
+            else if (i == 2 || i == 5) {
+                data[i] = "0 Bishop";
+            }
+            else if (i == 58 || i == 61) {
+                data[i] = "1 Bishop";
+            }
+            else if (i == 3) {
+                data[i] = "0 Queen";
+            }
+            else if (i == 59) {
+                data[i] = "1 Queen";
+            }
+            else if (i == 4) {
+                data[i] = "0 King";
+            }
+            else if (i == 60) {
+                data[i] = "1 King";
             }
             else {
                 data[i] = "";

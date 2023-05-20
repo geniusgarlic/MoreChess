@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 import { IPiece } from "./IPiece.sol";
 
-contract Bishop is IPiece{
+contract King is IPiece{
 
     uint8 private _id;
     uint8 private _currentPosition;
@@ -25,7 +25,7 @@ contract Bishop is IPiece{
 
     // Returns the name of the piece (e.g., "bishop", "knight", etc.)
     function getName() public pure override returns (string memory){
-        return "Bishop";
+        return "King";
     }
 
     // Returns the color of the piece ("white = False" or "black = True").
@@ -67,7 +67,7 @@ contract Bishop is IPiece{
     // Returns true if the piece can move to the specified position.
     // This does not take into account the state of the rest of the board (e.g., check situations).
     function canMove(uint8 to) public view override returns (bool) {
-        if ( abs( int8 ( getRow(_currentPosition) - getRow(to))) == abs( int8 ( getCol(_currentPosition) - getCol(to)) )) {
+        if ( abs( int8 ( getRow(_currentPosition) - getRow(to))) <= 1 && abs( int8 ( getCol(_currentPosition) - getCol(to)) ) <= 1 ) {
             return true;
         }
         return false;
