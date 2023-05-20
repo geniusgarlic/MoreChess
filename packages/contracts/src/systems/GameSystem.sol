@@ -16,5 +16,9 @@ contract GameSystem is System {
         
         BoardState.set(boardData);
     }
+
+    function getBoard() public view returns (bytes32[64] memory) {
+        return BoardState.get();
+    }
     
 }

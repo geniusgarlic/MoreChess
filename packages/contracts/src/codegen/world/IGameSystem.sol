@@ -5,4 +5,6 @@ pragma solidity >=0.8.0;
 
 interface IGameSystem {
   function startGame() external;
+
+  function getBoard() external view returns (bytes32[64] memory);
 }

@@ -5,37 +5,14 @@ import {IPiece} from "./IPiece.sol";
 
 contract Pawn is IPiece{
 
-    uint8 private _id;
     uint8 private _currentPosition;
     bool private _color;
     bool private _hasMoved;
-    string public url;
 
-    constructor(uint8 startingPosition, bool color, string memory url) {
-        _id = startingPosition;
+    constructor(uint8 startingPosition, bool color) {
         _currentPosition = startingPosition;
         _color = color;
-        url = url;
-    }
-
-    // Returns the game ID of the game this piece belongs to.
-    function getPieceId() public view override returns (uint8){
-        return _id;
-    }
-
-    // Returns the name of the piece (e.g., "bishop", "knight", etc.)
-    function getName() public pure override returns (string memory){
-        return "Pawn";
-    }
-
-    // Returns the color of the piece ("white = False" or "black = True").
-    function getColor() public view override returns (bool){
-        return _color;
-    }
-
-    // Returns the current position of the piece.
-    function getCurrentPosition() public view override returns (uint8){
-        return _currentPosition;
+        _hasMoved = false;
     }
 
     // Returns if the piece can jump over other pieces (like a knight).
@@ -56,11 +33,10 @@ contract Pawn is IPiece{
         }
     }
 
-    function promotion() public override returns (string memory){
+    function promotion() public view override returns (string memory){
         if (!canPromote()){
             revert("Piece cannot be promoted");
         }
-        emit PiecePromoted(_id, _currentPosition);
         return "Queen"; // TODO
     }
 
@@ -72,45 +48,44 @@ contract Pawn is IPiece{
         return position % 8;
     }
 
-    // Returns true if the piece can move to the specified position.
-    // This does not take into account the state of the rest of the board (e.g., check situations).
-    function canMove(uint8 to) public view override returns (bool) {
-        if (!_hasMoved) {
-            if ((_color == false && getRow(_currentPosition) + 2 == getRow(to)) || (_color == true && getRow(_currentPosition) - 2 == getRow(to))){
-                return true;
+    function generatePseudoLegalMoves(bytes32[64] memory board) public view override returns (uint8[] memory) {
+        uint8[] memory moves = new uint8[](4); // maximum of 4 moves for a pawn
+
+        if (_color == false) { // piece is white
+            if (board[_currentPosition + 8] == 0) {
+                moves[0] = _currentPosition + 8;
+                if (!_hasMoved) {                     
+                    if (board[_currentPosition + 16] == 0) { // if the square two in front of the pawn is empty
+                        moves[1] = _currentPosition + 16;
+                    }
+                }
+            }
+
+            if (uint8(board[_currentPosition + 7][0]) == 1) { // if the square to the diagonal left of the pawn is occupied by a black piece
+                moves[2] = _currentPosition + 7;
+            }
+            if (uint8(board[_currentPosition + 9][0]) == 1) { // if the square to the diagonal right of the pawn is occupied by a black piece
+                moves[3] = _currentPosition + 9;
             }
         }
-        else {
-            if ((_color == false && getRow(_currentPosition) + 1 == getRow(to)) || (_color == true && getRow(_currentPosition) - 1 == getRow(to))){
-                return true;
+        else if (_color == true) {
+            if (board[_currentPosition - 8] == 0) {
+                moves[0] = _currentPosition - 8;
+                if (!_hasMoved) {                     
+                    if (board[_currentPosition - 16] == 0) { // if the square two in front of the pawn is empty
+                        moves[1] = _currentPosition - 16;
+                    }
+                }
+            }
+
+            if (uint8(board[_currentPosition - 7][0]) == 0) { // TODO: check if this is correct
+                moves[2] = _currentPosition - 7;
+            }
+            if (uint8(board[_currentPosition - 9][0]) == 0) {
+                moves[3] = _currentPosition - 9;
             }
         }
-        return false;
-    }
 
-    // Moves the piece to the specified position.
-    // Reverts if the move is not valid.
-    function move(uint8 to) external {
-        if (canMove(to) == false){
-            revert("Invalid move");
-        }
-        emit PieceMoved(_id, _currentPosition, to);
-        _currentPosition = to;
-        _hasMoved = true;
-    }
-
-    function hasMoved() public view returns (bool) {
-        return _hasMoved;
-    }
-
-    // Returns true if the piece can take a piece at the specified position.
-    // This does not take into account the state of the rest of the board (e.g., check situations).
-    function canTake(uint8 to) external view returns (bool){
-        // line + 1 and col +- 1
-        if ((_color == false && getRow(_currentPosition) + 1 == getRow(to) || (_color == true && getRow(_currentPosition) - 1 == getRow(to))) 
-        && (getCol(_currentPosition) + 1 == getCol(to) || getCol(_currentPosition) - 1 == getCol(to))){
-            return true;
-        }
-        return false;
+        return moves;
     }
 }
