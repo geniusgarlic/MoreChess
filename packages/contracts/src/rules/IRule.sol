@@ -6,7 +6,7 @@ interface IRule {
     // event when a turn is over, the boolean corresponds to the color of the player who just played
     event TurnIsOver(bool isFinished);
 
-    function startingPosition() external view returns (bytes8[64] memory);
+    function startingPosition() external view returns (bytes32[64] memory);
 
     // returns true if a state corresponds to a finished game
     function isWin() external view returns (bool);

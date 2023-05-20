@@ -10,8 +10,8 @@ contract Classic is IRule{
         _currentColorTurn = startingColor;
     }
 
-    function startingPosition() public pure override returns (bytes8[64] memory) {
-        bytes8[64] memory data;
+    function startingPosition() public pure override returns (bytes32[64] memory) {
+        bytes32[64] memory data;
         for (uint8 i = 0; i < 64; i++) {
             if ((i >= 0 && i <= 7) || (i >= 56 && i <= 63)) {
                 data[i] = "Pawn";
@@ -24,11 +24,11 @@ contract Classic is IRule{
     }
 
     // returns true if a state corresponds to a finished game
-    function isWin() public view override returns (bool) {
+    function isWin() public pure override returns (bool) {
         return false;
     }
 
-    function isDraw() public view override returns (bool) {
+    function isDraw() public pure override returns (bool) {
         return false;
     }
 

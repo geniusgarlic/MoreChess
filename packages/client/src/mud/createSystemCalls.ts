@@ -15,7 +15,12 @@ export function createSystemCalls(
     return getComponentValue(Counter, singletonEntity);
   };
 
+  const startGame = async () => {
+    const tx = await worldSend("startGame", []);
+    await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
+  };
+
   return {
-    increment,
+    increment, startGame
   };
 }

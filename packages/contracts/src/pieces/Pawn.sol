@@ -9,11 +9,13 @@ contract Pawn is IPiece{
     uint8 private _currentPosition;
     bool private _color;
     bool private _hasMoved;
+    string public url;
 
-    constructor(uint8 startingPosition, bool color) {
+    constructor(uint8 startingPosition, bool color, string memory url) {
         _id = startingPosition;
         _currentPosition = startingPosition;
         _color = color;
+        url = url;
     }
 
     // Returns the game ID of the game this piece belongs to.
