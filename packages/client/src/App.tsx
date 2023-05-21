@@ -9,7 +9,9 @@ type BoardContent = { type: 'text' | 'img', value: string } | null;
 function App() {
   const {
     components: { BoardState },
-    systemCalls: { startGame },
+    systemCalls: { 
+      startGame,
+      getBoard },
     network: { storeCache },
   } = useMUD();
   

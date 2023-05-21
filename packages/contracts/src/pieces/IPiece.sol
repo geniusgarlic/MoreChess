@@ -6,6 +6,14 @@ interface IPiece {
     // event PieceTaken(uint8 pieceId, uint8 at, uint8 byPieceId); // TODO ask Norswap about this
     // event PiecePromoted(uint8 pieceId, uint8 at);
 
+    struct Piece {
+        string name;
+        string color;
+    }
+
+    // returns the color of the piece (false = white, true = black)
+    function getColor() external view returns (string memory);
+
     // Returns if the piece can jump over other pieces (like a knight).
     function canJump() external view returns (bool);
 
@@ -15,5 +23,5 @@ interface IPiece {
     function promotion() external view returns (string memory);
 
     // returns all the pseudo-legal moves for the piece (= all the squares this piece could go to)
-    function generatePseudoLegalMoves(bytes32[64] memory) external view returns (uint8[] memory);
+    function generatePseudoLegalMoves(Piece[64] memory) external view returns (uint8[] memory);
 }

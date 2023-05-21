@@ -5,14 +5,18 @@ import {IPiece} from "./IPiece.sol";
 
 contract Pawn is IPiece{
 
-    uint8 private _currentPosition;
-    bool private _color;
+    uint8 private _currentSquare;
+    string private _color;
     bool private _hasMoved;
 
-    constructor(uint8 startingPosition, bool color) {
-        _currentPosition = startingPosition;
+    constructor(uint8 startingPosition, string memory color) {
+        _currentSquare = startingPosition;
         _color = color;
         _hasMoved = false;
+    }
+
+    function getColor() public view returns (string memory) {
+        return _color;
     }
 
     // Returns if the piece can jump over other pieces (like a knight).
@@ -22,10 +26,10 @@ contract Pawn is IPiece{
 
     // Returns if the piece can promote
     function canPromote() public view override returns (bool){
-        if (_color == false && _currentPosition >= 56 && _currentPosition <= 63){
+        if (keccak256(abi.encodePacked(_color)) == keccak256(abi.encodePacked("white")) && _currentSquare >= 56 && _currentSquare <= 63){
             return true;
         }
-        else if (_color == true && _currentPosition >= 0 && _currentPosition <= 7){
+        else if (keccak256(abi.encodePacked(_color)) == keccak256(abi.encodePacked("black")) && _currentSquare >= 0 && _currentSquare <= 7){
             return true;
         }
         else{
@@ -48,41 +52,41 @@ contract Pawn is IPiece{
         return position % 8;
     }
 
-    function generatePseudoLegalMoves(bytes32[64] memory board) public view override returns (uint8[] memory) {
+    function generatePseudoLegalMoves(Piece[64] memory board) public view override returns (uint8[] memory) {
         uint8[] memory moves = new uint8[](4); // maximum of 4 moves for a pawn
 
-        if (_color == false) { // piece is white
-            if (board[_currentPosition + 8] == 0) {
-                moves[0] = _currentPosition + 8;
+        if (keccak256(abi.encodePacked(_color)) == keccak256(abi.encodePacked("white"))) { // piece is white
+            if (keccak256(abi.encodePacked(board[_currentSquare + 8].name)) == keccak256(abi.encodePacked("empty"))) { // square in front of pawn is empty
+                moves[0] = _currentSquare + 8;
                 if (!_hasMoved) {                     
-                    if (board[_currentPosition + 16] == 0) { // if the square two in front of the pawn is empty
-                        moves[1] = _currentPosition + 16;
+                    if (keccak256(abi.encodePacked(board[_currentSquare + 16].name)) == keccak256(abi.encodePacked("empty"))) { // if the square two in front of the pawn is empty
+                        moves[1] = _currentSquare + 16;
                     }
                 }
             }
 
-            if (uint8(board[_currentPosition + 7][0]) == 1) { // if the square to the diagonal left of the pawn is occupied by a black piece
-                moves[2] = _currentPosition + 7;
+            if (keccak256(abi.encodePacked(board[_currentSquare + 7].color)) == keccak256(abi.encodePacked("black"))) { // if the square to the diagonal left of the pawn is occupied by a black piece
+                moves[2] = _currentSquare + 7;
             }
-            if (uint8(board[_currentPosition + 9][0]) == 1) { // if the square to the diagonal right of the pawn is occupied by a black piece
-                moves[3] = _currentPosition + 9;
+            if (keccak256(abi.encodePacked(board[_currentSquare + 9].color)) == keccak256(abi.encodePacked("black"))) { // if the square to the diagonal right of the pawn is occupied by a black piece
+                moves[3] = _currentSquare + 9;
             }
         }
-        else if (_color == true) {
-            if (board[_currentPosition - 8] == 0) {
-                moves[0] = _currentPosition - 8;
+        else if (keccak256(abi.encodePacked(_color)) == keccak256(abi.encodePacked("black")))  {
+            if (keccak256(abi.encodePacked(board[_currentSquare - 8].name)) == keccak256(abi.encodePacked("empty"))) {
+                moves[0] = _currentSquare - 8;
                 if (!_hasMoved) {                     
-                    if (board[_currentPosition - 16] == 0) { // if the square two in front of the pawn is empty
-                        moves[1] = _currentPosition - 16;
+                    if (keccak256(abi.encodePacked(board[_currentSquare - 16].name)) == keccak256(abi.encodePacked("empty"))) { // if the square two in front of the pawn is empty
+                        moves[1] = _currentSquare - 16;
                     }
                 }
             }
 
-            if (uint8(board[_currentPosition - 7][0]) == 0) { // TODO: check if this is correct
-                moves[2] = _currentPosition - 7;
+            if (keccak256(abi.encodePacked(board[_currentSquare - 7].color)) == keccak256(abi.encodePacked("white"))) {
+                moves[2] = _currentSquare - 7;
             }
-            if (uint8(board[_currentPosition - 9][0]) == 0) {
-                moves[3] = _currentPosition - 9;
+            if (keccak256(abi.encodePacked(board[_currentSquare - 9].color)) == keccak256(abi.encodePacked("white"))) {
+                moves[3] = _currentSquare - 9;
             }
         }
 

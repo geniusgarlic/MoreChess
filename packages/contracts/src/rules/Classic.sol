@@ -11,138 +11,191 @@ import {Queen} from "../pieces/Queen.sol";
 import {King} from "../pieces/King.sol";
 
 contract Classic is IRule{
-    bool private _currentColorTurn;
-    bytes32[64] private _currentPosition;
-
-    constructor(bool startingColor) {
+    string private _currentColorTurn;
+    Piece[64] private _currentPosition;
+    
+    constructor(string startingColor) {
         _currentColorTurn = startingColor;
         _currentPosition = startingPosition();
     }
 
-    function startingPosition() public pure override returns (bytes32[64] memory) {
-        bytes32[64] memory data;
+    function cmpStr(string memory a, string memory b) internal pure returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
+    }
+
+    function startingPosition() public pure override returns (Piece[64] memory) {
+        Piece[64] memory data;
         for (uint8 i = 0; i < 64; i++) {
             if (i >= 8 && i <= 15) {
-                data[i] = "0 Pawn";
+                data[i] = Piece("Pawn", "white");
             }
             else if (i >= 48 && i <= 55) {
-                data[i] = "1 Pawn";
+                data[i] = Piece("Pawn", "black");
             } 
             else if (i == 0 || i == 7) {
-                data[i] = "0 Rook";
+                data[i] = Piece("Rook", "white");
             }
             else if (i == 56 || i == 63) {
-                data[i] = "1 Rook";
+                data[i] = Piece("Rook", "black");
             }
             else if (i == 1 || i == 6) {
-                data[i] = "0 Knight";
+                data[i] = Piece("Knight", "white");
             }
             else if (i == 57 || i == 62) {
-                data[i] = "1 Knight";
+                data[i] = Piece("Knight", "black");
             }
             else if (i == 2 || i == 5) {
-                data[i] = "0 Bishop";
+                data[i] = Piece("Bishop", "white");
             }
             else if (i == 58 || i == 61) {
-                data[i] = "1 Bishop";
+                data[i] = Piece("Bishop", "black");
             }
             else if (i == 3) {
-                data[i] = "0 Queen";
+                data[i] = Piece("Queen", "white");
             }
             else if (i == 59) {
-                data[i] = "1 Queen";
+                data[i] = Piece("Queen", "black");
             }
             else if (i == 4) {
-                data[i] = "0 King";
+                data[i] = Piece("King", "white");
             }
             else if (i == 60) {
-                data[i] = "1 King";
+                data[i] = Piece("King", "black");
             }
             else {
-                data[i] = "";
+                data[i] = Piece("empty", "empty");
             }
         }
         return data;
     }
 
     // checks if a move from square 'from' to 'square' is legal, and if it is, returns the new board state, also updates all relevant values
-    function playMove(uint8 from, uint8 to) public returns (bytes32[64] memory) {
+    function playMove(uint8 from, uint8 to) public view override returns (Piece[64] memory) {
         // TODO: take into account special rules like castling, en passant, etc.
-        IPiece actionPiece = stringToPiece(from);
-
-        if (actionPiece.getColor() != _currentColorTurn) {
+        if (_currentPosition[from].name == "empty") {
+            revert("No piece to move");
+        }
+        if (!cmpStr(_currentPosition[from].color, _currentColorTurn)) {
             revert("Not your turn");
         }
-        if (!actionPiece.canMove(to)) {
-            revert("Piece cannot move to that square");
+        if (cmpStr(_currentPosition[to].color, _currentColorTurn)) {
+            revert("Cannot capture own piece");
         }
-        if (!actionPiece.canTake(to)) {
-            revert("Piece cannot take that square");
+
+        IPiece actionPiece = stringToPiece(_currentPosition, from);
+
+        uint8[] memory actionPiecePseudoLegalMoves = actionPiece.generatePseudoLegalMoves(_currentPosition);
+        for (uint i; i < actionPiecePseudoLegalMoves.length + 1; i++) {
+            if (i == actionPiecePseudoLegalMoves.length) {
+                revert("Move is not legal");
+            }
+            if (actionPiecePseudoLegalMoves[i] == to) {
+                // the move is legal
+                break;
+            }
         }
+
+        Piece[64] memory newPosition = _currentPosition;
+        newPosition[to] = newPosition[from];
+        newPosition[from] = new Piece("empty", "empty");
 
         // now check if the board position causes a problem (discovered check / not reacting to check)
-        //discovered check
+        //first get the position from the kings
+        uint8 newEnnemyKingPosition;
+        uint8 newKingPosition; // this king is the same king as kingPosition (maybe not in the same position)
+        for (uint i; i < 64; i++) {
+            if (cpmStr(newPosition[i].name, "King")) {
+                if (cmpStr(newPosition[i].color, cmpStr(_currentColorTurn, "white")?"black":"white")) {
+                    newEnnemyKingPosition = i;
+                } else {
+                    newKingPosition = i;
+                }
+            }
+        }
 
-        // not reacting to check
+
+        uint8[16][] memory newEnnemyPseudoLegalMoves = generatePseudoLegalMoves(newPosition, !_currentColorTurn);
+        uint8[64][] memory newPseudoLegalMoves = generatePseudoLegalMoves(newPosition, _currentColorTurn);
+        
+        for (uint i; i < newEnnemyPseudoLegalMoves.length; i++) {
+            if (newEnnemyPseudoLegalMoves[i].length > 0) {
+                for (uint j; j < newEnnemyPseudoLegalMoves[i].length; j++) {
+                    if (newEnnemyPseudoLegalMoves[i][j] == newKingPosition) {
+                        // the king of the color that made the move is in check after the move
+                        revert("King is in check"); // discovered check or not reacting to check
+                    }
+                }
+            }
+        }
+        for (uint i; i < newPseudoLegalMoves.length; i++) {
+            if (newPseudoLegalMoves[i].length > 0) {
+                for (uint j; j < newPseudoLegalMoves[i].length; j++) {
+                    if (newPseudoLegalMoves[i][j] == newEnnemyKingPosition) {
+                        // the king of the color that did not make the move is in check after the move, so it may be checkmate
+                        if (isWin()) {
+                            // todo game over
+                        }
+                    }
+                }
+            }
+        }
+        // if we get here, there were no checks issues so we can update the board
 
         // now we know the move is legal, so we can update the board
         _currentPosition[to] = _currentPosition[from];
-        _currentPosition[from] = "";
+        _currentPosition[from] = new Piece("empty", "empty");
 
-        _currentColorTurn = !_currentColorTurn;
+        _currentColorTurn = cmpStr(_currentColorTurn, "white")?"black":"white";
         
-        // checks for a win
-        if (isWin()) {
-            // TODO: game over
+        // checks for a draw
+        if (isDraw()) {
+            // TODO: game over (prob draw not here)
         }
 
         return _currentPosition;
     }
 
-    function stringToPiece(bytes32[64] memory position, uint8 from) private returns(IPiece) {
+    function stringToPiece(Piece[64] memory position, uint8 from) private returns(IPiece) {
         // input is "0/1 pieceName" 0 is white and 1 is black
-        bytes32 pieceName = position[from];
-        bool color = pieceName[0] == "0" ? false : true;
-        string memory name = string(abi.encodePacked(pieceName[2:]));
+        string memory name = position[from].name;
+        string memory color = position[from].color;
 
-        if (keccak256(bytes(name)) == keccak256(bytes("Pawn"))) {
+        if (name == "Pawn") {
             return new Pawn(from, color);
         }
-        else if (keccak256(bytes(name)) == keccak256(bytes("Knight"))) {
+        else if (name == "Knight") {
             return new Knight(from, color);
         }
-        else if (keccak256(bytes(name)) == keccak256(bytes("Bishop"))) {
+        else if (name == "Bishop") {
             return new Bishop(from, color);
         }
-        else if (keccak256(bytes(name)) == keccak256(bytes("Rook"))) {
+        else if (name == "Rook") {
             return new Rook(from, color);
         }
-        else if (keccak256(bytes(name)) == keccak256(bytes("Queen"))) {
+        else if (name == "Queen") {
             return new Queen(from, color);
         }
-        else if (keccak256(bytes(name)) == keccak256(bytes("King"))) {
+        else if (name == "King") {
             return new King(from, color);
-        }
-        else {
+        } else {
             revert("Invalid piece name");
         }
 
     }
 
-    function generatePseudoLegalMoves(bytes32[64] memory position, bool color) public pure returns (uint8[64][] memory) {
-        uint8[64][] memory moves = new uint8[64][]();
+    function generatePseudoLegalMoves(Piece[64] memory position, string toPlayColor) public pure returns (uint8[64][] memory) {
+        uint8[16][] memory moves = new uint8[16][](); // maximum of 16 pieces for a color
 
+        uint8 indexCnt = 0;
         for (uint8 i = 0; i < 64; i++) {
             // check each square for a piece, if it is the color of the one playing, generate the pseudo legal moves for this piece.
-            bool pieceColor = position[i][0] == "0" ? false : true;
-            if (pieceColor == color) {
+            string pieceColor = position[i].color;
+            if (pieceColor == toPlayColor) {
                 IPiece piece = stringToPiece(position, i);
-                moves[i] = piece.generatePseudoLegalMoves(position);
+                moves[indexCnt] = piece.generatePseudoLegalMoves(position);
+                indexCnt++;
             }
-            // TODO J'ETAIS ICI ET JE PENSE QUE JE DOIS GENERER LES PSEUDOLEGAUX DE L'AUTRE COULEUR AVEC LE NVEAU STATE PR VOIR SI IL Y A ECHEC
-            // JE PARLE BIEN DE LE FAIRE DANS LA FONCTION D'AU DESSUS PLAYMOVE
         }
-
         return moves;
     }
 
