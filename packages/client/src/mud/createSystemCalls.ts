@@ -20,7 +20,12 @@ export function createSystemCalls(
     await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
   };
 
+  const getBoard = async () => {
+    const tx = await worldSend("getBoard", []);
+    await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
+  };
+
   return {
-    increment, startGame
+    increment, startGame, getBoard
   };
 }

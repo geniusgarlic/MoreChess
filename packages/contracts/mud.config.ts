@@ -1,15 +1,22 @@
 import { mudConfig } from "@latticexyz/world/register";
 
 export default mudConfig({
+  enums: {
+    Piece: ["Pawn", "Knight", "Bishop", "Rook", "Queen", "King", "Empty"],
+    Color: ["White", "Black", "Empty"],
+  },
   tables: {
-    Counter: {
-      keySchema: {},
-      schema: "uint32",
+    GameBoard: {
+      keySchema: {square: "uint8"},
+      schema: {
+        piece: "Piece",
+        color: "Color",
+      },
     },
-    BoardState: {
+    Turn : {
       keySchema: {},
-      schema: "bytes32[64]",
-    },
+      schema: {turn: "Color"},
+    }
   },
   modules: [
     {

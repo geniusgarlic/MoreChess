@@ -5,12 +5,13 @@ import { defineComponent, Type as RecsType, World } from "@latticexyz/recs";
 
 export function defineContractComponents(world: World) {
   return {
-    Counter: (() => {
-      const tableId = new TableId("", "Counter");
+    GameBoard: (() => {
+      const tableId = new TableId("", "GameBoard");
       return defineComponent(
         world,
         {
-          value: RecsType.Number,
+          piece: RecsType.Number,
+          color: RecsType.Number,
         },
         {
           metadata: {
@@ -20,12 +21,12 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
-    BoardState: (() => {
-      const tableId = new TableId("", "BoardState");
+    Turn: (() => {
+      const tableId = new TableId("", "Turn");
       return defineComponent(
         world,
         {
-          value: RecsType.StringArray,
+          turn: RecsType.Number,
         },
         {
           metadata: {
