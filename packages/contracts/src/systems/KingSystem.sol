@@ -17,7 +17,7 @@ contract KingSystem is System {
 
         uint8 indCnt = 0;
         unchecked {
-        for(uint8 i = 0; i < 8; i++){ // once for each direction
+        for(uint8 i = 0; i < 9; i++){ // once for each direction
             uint8 move = 0;
             if(i == 0){ // up
                 move = pieceSquare + 8;
@@ -35,6 +35,9 @@ contract KingSystem is System {
                 move = pieceSquare - 9;
             } else if(i == 7){ // up left
                 move = pieceSquare + 7;
+            } else if (i == 8) {
+                moves[indCnt] = 67;
+                break;
             }
 
             if(move > 63){ // if the move is off the board (move < 0 is not possible because of the uint8 type)

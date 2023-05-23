@@ -7,7 +7,7 @@ export type SystemCalls = ReturnType<typeof createSystemCalls>;
 
 export function createSystemCalls(
   { worldSend, txReduced$, singletonEntity }: SetupNetworkResult,
-  { GameBoard, Turn }: ClientComponents
+  { GameBoard, Turn, GameOver }: ClientComponents
 ) {
   const startGame = async () => {
     const tx = await worldSend("startGame", []);

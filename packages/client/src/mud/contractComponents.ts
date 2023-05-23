@@ -36,5 +36,21 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
+    GameOver: (() => {
+      const tableId = new TableId("", "GameOver");
+      return defineComponent(
+        world,
+        {
+          checkmate: RecsType.Boolean,
+          stalemate: RecsType.Boolean,
+        },
+        {
+          metadata: {
+            contractId: tableId.toHexString(),
+            tableId: tableId.toString(),
+          },
+        }
+      );
+    })(),
   };
 }

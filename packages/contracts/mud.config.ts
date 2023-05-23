@@ -16,7 +16,11 @@ export default mudConfig({
     Turn : {
       keySchema: {},
       schema: {turn: "Color"},
-    }
+    },
+    GameOver: {
+      keySchema: {},
+      schema: {checkmate: "bool", stalemate: "bool"},
+    },
   },
   modules: [
     {

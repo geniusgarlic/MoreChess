@@ -5,3 +5,4 @@ pragma solidity >=0.8.0;
 
 import { GameBoard, GameBoardData, GameBoardTableId } from "./tables/GameBoard.sol";
 import { Turn, TurnTableId } from "./tables/Turn.sol";
+import { GameOver, GameOverData, GameOverTableId } from "./tables/GameOver.sol";

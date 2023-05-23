@@ -12,6 +12,7 @@ function App() {
     components: { 
       GameBoard,
       Turn,
+      GameOver,
      },
     systemCalls: { 
       startGame,
@@ -22,6 +23,9 @@ function App() {
   
 
   const boardData = useRows(storeCache, {table: "GameBoard"});
+  const turnData = useRows(storeCache, {table: "Turn"});
+  const gameOverData = useRows(storeCache, {table: "GameOver"});
+
   const [lastClickedSquare, setLastClickedSquare] = useState<number | null>(null);
   const [lastClickedSquares, setLastClickedSquares] = useState<number[]>([]);
 
@@ -57,7 +61,6 @@ function App() {
     // Avoid mutating state directly
     const newBoard = JSON.parse(JSON.stringify(board));
     newBoard[row][col] = { type, value };
-    setBoard(newBoard);
     return newBoard;
   };
 
@@ -96,6 +99,7 @@ function App() {
 
     newBoard = addToBoard(toRow, toCol, 'img', getPieceUrl(boardData[from].value));
     newBoard[fromRow][fromCol] = null;
+    console.log(newBoard);
     setBoard(newBoard);
   };
 
@@ -180,10 +184,24 @@ function App() {
         }}>
           Move test
         </button>
+
+
+        <button onClick={() => {
+          console.log(turnData[0].value.turn?"Black":"White");
+        }}>
+          Turn
+        </button>
+
+        <button onClick={() => {
+          console.log(gameOverData[0].value.checkmate);
+        }}>
+          Checkmate ?
+        </button>
+        
       </div>
 
     </div>
   );
 }
-
+//Checkmate: {gameOverData.value.checkmate}
 export default App;

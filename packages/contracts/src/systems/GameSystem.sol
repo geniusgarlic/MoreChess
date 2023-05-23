@@ -11,6 +11,7 @@ import { Piece, Color } from "../codegen/Types.sol";
 
 import { GameBoard } from "../codegen/Tables.sol";
 import { Turn } from "../codegen/Tables.sol";
+import { GameOver } from "../codegen/Tables.sol";
 
 import { PawnSystem } from "./PawnSystem.sol";
 import { KnightSystem } from "./KnightSystem.sol";
@@ -23,6 +24,9 @@ contract GameSystem is System {
 
     function startGame() public {
         Turn.set(Color.White);
+        GameOver.setCheckmate(false);
+        GameOver.setStalemate(false);
+
         for (uint8 i = 0; i < 64; i++) {
             if (i >= 8 && i <= 15) {
                 GameBoard.setPiece(i, Piece.Pawn);
@@ -109,6 +113,65 @@ contract GameSystem is System {
         return moves;
     }
 
+    function movePieceSub (Color turnColor, Piece[64] memory boardPieces, Color[64] memory boardColors, uint8 from, uint8 to, uint8 newKingPosition, uint8 newEnnemyKingPosition, Piece movingPiece) private {
+        uint8[64][16] memory newEnnemyPseudoLegalMoves; // 16 pieces
+        uint8[64][16] memory newPseudoLegalMoves;
+
+        // computing new pseudo legal moves
+        uint8 ind = 0;
+        uint8 indEnnemy = 0;
+        for (uint8 i = 0; i < 64; i++) {
+            if (boardPieces[i] != Piece.Empty) {
+                if (boardColors[i] == turnColor) {
+                    newPseudoLegalMoves[ind] = getPseudoLegalMoves(boardPieces[i], from, to, i);
+                    ind++;
+                } else {
+                    newEnnemyPseudoLegalMoves[indEnnemy] = getPseudoLegalMoves(boardPieces[i], from, to, i);
+                    indEnnemy++;
+                }
+                if (ind == 16 && indEnnemy == 16) {
+                    break;
+                }
+            }
+        }
+
+        // checking if our king is in check after the move (if it is, the move is illegal)
+        for (uint i = 0; i < 16; i++) {
+            for (uint j = 0; j < 64; j++) {
+                if (newEnnemyPseudoLegalMoves[i][j] == newKingPosition) {
+                    // the king of the color that made the move is in check after the move
+                    revert("King is in check"); // =  discovered check or not reacting to check
+                }
+            }
+        }
+
+        bool checkmateOver = false;
+        for (uint i = 0; i < 16; i++) {
+            if (checkmateOver) {
+                break;
+            } 
+            for (uint j = 0; j < 64; j++) {
+                if (newPseudoLegalMoves[i][j] == newEnnemyKingPosition) { // for each move the ennemy can make
+                    // the king of the color that did not make the move is in check after the move, so it may be checkmate
+                    GameOver.setCheckmate(true);
+                    break;
+                }
+            }
+        }
+        
+
+        // now we know the move is legal, so we can update the board
+        Turn.set(turnColor == Color.White ? Color.Black : Color.White);
+
+        if (movingPiece == Piece.Empty) {
+            revert ("moving piece is empty");
+        }
+        GameBoard.setPiece(to, movingPiece);
+        GameBoard.setColor(to, turnColor);
+        GameBoard.setPiece(from, Piece.Empty);
+        GameBoard.setColor(from, Color.Empty);
+    }
+
     function movePiece(uint8 from, uint8 to) public {
         Piece[64] memory boardPieces;
         Color[64] memory boardColors;
@@ -158,51 +221,7 @@ contract GameSystem is System {
             }
         }
 
-        uint8[64][16] memory newEnnemyPseudoLegalMoves; // 16 pieces
-        uint8[64][16] memory newPseudoLegalMoves;
-
-        uint8 ind = 0;
-        uint8 indEnnemy = 0;
-        for (uint8 i = 0; i < 64; i++) {
-            if (boardPieces[i] != Piece.Empty) {
-                if (boardColors[i] == turnColor) {
-                    newPseudoLegalMoves[ind] = getPseudoLegalMoves(boardPieces[i], from, to, i);
-                    ind++;
-                } else {
-                    newEnnemyPseudoLegalMoves[indEnnemy] = getPseudoLegalMoves(boardPieces[i], from, to, i);
-                    indEnnemy++;
-                }
-                if (ind == 16 && indEnnemy == 16) {
-                    break;
-                }
-            }
-        }
+        movePieceSub(turnColor, boardPieces, boardColors, from, to, newKingPosition,newEnnemyKingPosition, movingPiece);
         
-        for (uint i = 0; i < 16; i++) {
-            for (uint j = 0; j < 64; j++) {
-                if (newEnnemyPseudoLegalMoves[i][j] == newKingPosition) {
-                    // the king of the color that made the move is in check after the move
-                    revert("King is in check"); // =  discovered check or not reacting to check
-                }
-            }
-        }
-        for (uint i = 0; i < 16; i++) {
-            for (uint j = 0; j < 64; j++) {
-                if (newPseudoLegalMoves[i][j] == newEnnemyKingPosition) {
-                    // the king of the color that did not make the move is in check after the move, so it may be checkmate
-                    // if (isWin()) {
-                    //     // todo game over
-                    // }
-                    break;
-                }
-            }
-        }
-
-        // now we know the move is legal, so we can update the board
-        Turn.set(turnColor == Color.White ? Color.Black : Color.White);
-        GameBoard.setPiece(to, movingPiece);
-        GameBoard.setColor(to, turnColor);
-        GameBoard.setPiece(from, Piece.Empty);
-        GameBoard.setColor(from, Color.Empty);
     }
 }
