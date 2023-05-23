@@ -68,7 +68,8 @@ contract RookSystem is System {
                     }
                 }
             }
-        }}
+        }
+        }
         return moves;
     }
     

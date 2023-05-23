@@ -92,17 +92,17 @@ contract GameSystem is System {
     function getPseudoLegalMoves(Piece piece, uint8 from, uint8 to, uint8 pieceSquare) private view returns (uint8[64] memory) {
         uint8[64] memory moves;
         if (piece == Piece.Pawn) {
-            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalPawnMoves(from, to, pieceSquare);
         } else if (piece == Piece.Knight) {
-            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalKnightMoves(from, to, pieceSquare);
         } else if (piece == Piece.Bishop) {
-            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalBishopMoves(from, to, pieceSquare);
         } else if (piece == Piece.Rook) {
             moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
         } else if (piece == Piece.Queen) {
-            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalQueenMoves(from, to, pieceSquare);
         } else if (piece == Piece.King) {
-            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalKingMoves(from, to, pieceSquare);
         } else {
             revert("Piece not recognized");
         }

@@ -23,6 +23,8 @@ function App() {
 
   const boardData = useRows(storeCache, {table: "GameBoard"});
   const [lastClickedSquare, setLastClickedSquare] = useState<number | null>(null);
+  const [lastClickedSquares, setLastClickedSquares] = useState<number[]>([]);
+
 
   // white + black (pawn, knight, bishop, rook, queen, king) (0 is white pawn, 1 black pawn, 2 white knight, etc.)
   const pieceURLs = [
@@ -65,6 +67,21 @@ function App() {
     setBoard(newBoard);
   };
 
+  const movePiecePromise = (from: number, to: number) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const result = movePiece(from, to);
+        // Here, I'm assuming that movePiece returns some result. 
+        // If it's a success indicator, you can check it and call resolve or reject accordingly.
+        if (true) { // Modify this line based on the actual return value of movePiece
+          resolve(result);
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
   const moveTo = (from: number, to: number) => {
     var newBoard = JSON.parse(JSON.stringify(board));
     const fromRow = Math.floor(from / 8);
@@ -90,7 +107,7 @@ function App() {
   const renderBoardData = () => {
     const newBoard = JSON.parse(JSON.stringify(board));
     
-    boardData.forEach((item, index) => {
+    boardData.forEach((item: any, index: number) => {
       const row = Math.floor(index / 8);
       const col = index % 8;
       const url = getPieceUrl(item.value);
@@ -100,6 +117,21 @@ function App() {
     });
     setBoard(newBoard);
   };
+
+  useEffect(() => {
+    if (lastClickedSquares.length === 2) {
+        setLastClickedSquares([]);
+        movePiecePromise(lastClickedSquares[0], lastClickedSquares[1])
+      .then(() => {
+        moveTo(lastClickedSquares[0], lastClickedSquares[1]);
+      })
+      .catch((error) => {
+        console.error('Move failed', error);
+      });
+        
+    }
+}, [lastClickedSquares, movePiece, moveTo]);
+
 
 
   return (
@@ -114,7 +146,11 @@ function App() {
               return null;
             }}
             onSquareClick={(squareIndex) => {
-              setLastClickedSquare(squareIndex);
+              if (lastClickedSquares.length === 2) {
+                setLastClickedSquares([lastClickedSquares[1], squareIndex]);
+              } else {
+                setLastClickedSquares([...lastClickedSquares, squareIndex]);
+              }
             }}
             lastClickedSquare={lastClickedSquare}
           />

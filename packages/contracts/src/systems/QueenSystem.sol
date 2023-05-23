@@ -13,10 +13,11 @@ contract QueenSystem is System {
 
     // either from & to = 65 and then we compute on the old position, otherwise we compute on the new position
     function getPseudoLegalQueenMoves(uint8 from, uint8 to, uint8 pieceSquare) public view returns (uint8[64] memory) {
-        uint8[64] memory moves; // maximum of 14 moves for a rook
+        uint8[64] memory moves; // maximum of 27 moves for a queen
 
         uint8 indCnt = 0;
-        for(uint8 i = 0; i < 4; i++){ // once for each direction
+        unchecked {
+        for(uint8 i = 0; i < 8; i++){ // once for each direction
             for(uint8 j = 0; j < 7; j++){ // the piece can travel a maximum distance of 7 squares
                 uint8 move = 0;
                 if(i == 0){ // up
@@ -27,8 +28,17 @@ contract QueenSystem is System {
                     move = pieceSquare - (j + 1) * 8;
                 } else if(i == 3){ // left
                     move = pieceSquare - (j + 1);
+                } else if(i == 4){ // up right
+                    move = pieceSquare + (j + 1) * 9;
+                } else if(i == 5){ // down right
+                    move = pieceSquare - (j + 1) * 7;
+                } else if(i == 6){ // down left
+                    move = pieceSquare - (j + 1) * 9;
+                } else if(i == 7){ // up left
+                    move = pieceSquare + (j + 1) * 7;
                 }
-                if(move > 63 || move < 0){ // if the move is off the board
+
+                if(move > 63){ // if the move is off the board (move < 0 is not possible because of the uint8 type)
                     break;
                 }
 
@@ -43,7 +53,7 @@ contract QueenSystem is System {
                             moves[indCnt] = move;
                             indCnt++;
                             break;
-                    }
+                        }
                     } else {
                         if (GameBoard.get(pieceSquare).color == GameBoard.get(from).color) {  // same color
                             break;
@@ -67,6 +77,7 @@ contract QueenSystem is System {
                     }
                 }
             }
+        }
         }
         return moves;
     }

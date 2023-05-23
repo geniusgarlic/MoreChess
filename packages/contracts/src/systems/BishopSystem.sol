@@ -13,22 +13,24 @@ contract BishopSystem is System {
 
     // either from & to = 65 and then we compute on the old position, otherwise we compute on the new position
     function getPseudoLegalBishopMoves(uint8 from, uint8 to, uint8 pieceSquare) public view returns (uint8[64] memory) {
-        uint8[64] memory moves; // maximum of 14 moves for a rook
+        uint8[64] memory moves; // maximum of 13 moves for a bishop
 
         uint8 indCnt = 0;
+        unchecked {
         for(uint8 i = 0; i < 4; i++){ // once for each direction
             for(uint8 j = 0; j < 7; j++){ // the piece can travel a maximum distance of 7 squares
                 uint8 move = 0;
-                if(i == 0){ // up
-                    move = pieceSquare + (j + 1) * 8;
-                } else if(i == 1){ // right
-                    move = pieceSquare + (j + 1);
-                } else if(i == 2){ // down
-                    move = pieceSquare - (j + 1) * 8;
-                } else if(i == 3){ // left
-                    move = pieceSquare - (j + 1);
+                if(i == 0){ // up right
+                    move = pieceSquare + (j + 1) * 9;
+                } else if(i == 1){ // down right
+                    move = pieceSquare - (j + 1) * 7;
+                } else if(i == 2){ // down left
+                    move = pieceSquare - (j + 1) * 9;
+                } else if(i == 3){ // up left
+                    move = pieceSquare + (j + 1) * 7;
                 }
-                if(move > 63 || move < 0){ // if the move is off the board
+
+                if(move > 63){ // if the move is off the board (move < 0 is not possible because of the uint8 type)
                     break;
                 }
 
@@ -43,7 +45,7 @@ contract BishopSystem is System {
                             moves[indCnt] = move;
                             indCnt++;
                             break;
-                    }
+                        }
                     } else {
                         if (GameBoard.get(pieceSquare).color == GameBoard.get(from).color) {  // same color
                             break;
@@ -67,6 +69,7 @@ contract BishopSystem is System {
                     }
                 }
             }
+        }
         }
         return moves;
     }
