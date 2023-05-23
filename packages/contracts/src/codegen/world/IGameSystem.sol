@@ -10,5 +10,5 @@ interface IGameSystem {
 
   function getBoard() external view returns (Piece[64] memory, Color[64] memory);
 
-  function movePiece(uint8 from, uint8 to) external returns (Piece[64] memory, Color[64] memory);
+  function movePiece(uint8 from, uint8 to) external;
 }

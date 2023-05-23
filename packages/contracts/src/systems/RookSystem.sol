@@ -2,8 +2,6 @@
 pragma solidity >=0.8.0;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { IRule } from "../rules/IRule.sol";
-import { Classic } from "../rules/Classic.sol";
 import { getUniqueEntity } from "@latticexyz/world/src/modules/uniqueentity/getUniqueEntity.sol";
 import { StructLibrary } from "../StructLibrary.sol";
 
@@ -18,6 +16,7 @@ contract RookSystem is System {
         uint8[64] memory moves; // maximum of 14 moves for a rook
 
         uint8 indCnt = 0;
+        unchecked {
         for(uint8 i = 0; i < 4; i++){ // once for each direction
             for(uint8 j = 0; j < 7; j++){ // the piece can travel a maximum distance of 7 squares
                 uint8 move = 0;
@@ -30,7 +29,7 @@ contract RookSystem is System {
                 } else if(i == 3){ // left
                     move = pieceSquare - (j + 1);
                 }
-                if(move > 63 || move < 0){ // if the move is off the board
+                if(move > 63){ // if the move is off the board (move < 0 is not possible because of the uint8 type)
                     break;
                 }
 
@@ -45,7 +44,7 @@ contract RookSystem is System {
                             moves[indCnt] = move;
                             indCnt++;
                             break;
-                    }
+                        }
                     } else {
                         if (GameBoard.get(pieceSquare).color == GameBoard.get(from).color) {  // same color
                             break;
@@ -69,7 +68,7 @@ contract RookSystem is System {
                     }
                 }
             }
-        }
+        }}
         return moves;
     }
     

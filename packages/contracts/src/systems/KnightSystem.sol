@@ -2,8 +2,6 @@
 pragma solidity >=0.8.0;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { IRule } from "../rules/IRule.sol";
-import { Classic } from "../rules/Classic.sol";
 import { getUniqueEntity } from "@latticexyz/world/src/modules/uniqueentity/getUniqueEntity.sol";
 import { StructLibrary } from "../StructLibrary.sol";
 
@@ -14,7 +12,7 @@ import { Piece, Color } from "../codegen/Types.sol";
 contract KnightSystem is System {
 
     // either from & to = 65 and then we compute on the old position, otherwise we compute on the new position
-    function getPseudoLegalKingnightMoves(uint8 from, uint8 to, uint8 pieceSquare) public view returns (uint8[64] memory) {
+    function getPseudoLegalKnightMoves(uint8 from, uint8 to, uint8 pieceSquare) public view returns (uint8[64] memory) {
         uint8[64] memory moves; // maximum of 14 moves for a rook
 
         uint8 indCnt = 0;

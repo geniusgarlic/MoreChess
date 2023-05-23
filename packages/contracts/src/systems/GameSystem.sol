@@ -2,8 +2,6 @@
 pragma solidity >=0.8.0;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { IRule } from "../rules/IRule.sol";
-import { Classic } from "../rules/Classic.sol";
 import { getUniqueEntity } from "@latticexyz/world/src/modules/uniqueentity/getUniqueEntity.sol";
 import { StructLibrary } from "../StructLibrary.sol";
 
@@ -22,8 +20,6 @@ import { QueenSystem } from "./QueenSystem.sol";
 import { KingSystem } from "./KingSystem.sol";
 
 contract GameSystem is System {
-
-    //uint8[64] memory moves = IWorld(_world()).getPseudoLegalRookMoves(0);
 
     function startGame() public {
         Turn.set(Color.White);
@@ -86,7 +82,7 @@ contract GameSystem is System {
     function getBoard() public view returns (Piece[64] memory, Color[64] memory) {
         Piece[64] memory boardPieces;
         Color[64] memory boardColors;
-        for (uint8 i; i < 64; i++) {
+        for (uint8 i = 0; i < 64; i++) {
             boardPieces[i]= GameBoard.get(i).piece;
             boardColors[i]= GameBoard.get(i).color;
         }
@@ -96,24 +92,24 @@ contract GameSystem is System {
     function getPseudoLegalMoves(Piece piece, uint8 from, uint8 to, uint8 pieceSquare) private view returns (uint8[64] memory) {
         uint8[64] memory moves;
         if (piece == Piece.Pawn) {
-            moves = IWorld(_world()).getPseudoLegalPawnMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
         } else if (piece == Piece.Knight) {
-            moves = IWorld(_world()).getPseudoLegalKnightMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
         } else if (piece == Piece.Bishop) {
-            moves = IWorld(_world()).getPseudoLegalBishopMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
         } else if (piece == Piece.Rook) {
             moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
         } else if (piece == Piece.Queen) {
-            moves = IWorld(_world()).getPseudoLegalQueenMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
         } else if (piece == Piece.King) {
-            moves = IWorld(_world()).getPseudoLegalKingMoves(from, to, pieceSquare);
+            moves = IWorld(_world()).getPseudoLegalRookMoves(from, to, pieceSquare);
         } else {
             revert("Piece not recognized");
         }
         return moves;
     }
 
-    function movePiece(uint8 from, uint8 to) public returns (Piece[64] memory, Color[64] memory) {
+    function movePiece(uint8 from, uint8 to) public {
         Piece[64] memory boardPieces;
         Color[64] memory boardColors;
         (boardPieces, boardColors) = getBoard();
@@ -132,7 +128,7 @@ contract GameSystem is System {
         Piece movingPiece = boardPieces[from];
 
         uint8[64] memory movingPiecePseudoLegalMoves = getPseudoLegalMoves(movingPiece, 65, 65, from);
-        for (uint i; i < 65; i++) {
+        for (uint i = 0; i < 65; i++) {
             if (movingPiecePseudoLegalMoves[i] == to) {
                 //move is pseudo legal (meaning the piece can move / capture that square, but maybe there is a check that prevents it)
                 break;
@@ -142,24 +138,19 @@ contract GameSystem is System {
             }
         }
 
-
-
-
-
-        Piece[64] memory newBoardPieces = boardPieces;
-        Color[64] memory newBoardColors = boardColors;
-        newBoardPieces[to] = movingPiece;
-        newBoardColors[to] = turnColor;
-        newBoardPieces[from] = Piece.Empty;
-        newBoardColors[from] = Color.Empty;
+        // todo remove new and just modify existing arrays
+        boardPieces[to] = movingPiece;
+        boardColors[to] = turnColor;
+        boardPieces[from] = Piece.Empty;
+        boardColors[from] = Color.Empty;
 
         // now check if the board position causes a problem (discovered check / not reacting to check)
         //first get the position from the kings
         uint8 newEnnemyKingPosition;
         uint8 newKingPosition; // this king is the same king as kingPosition (maybe not in the same position)
-        for (uint8 i; i < 64; i++) {
-            if (newBoardPieces[i] == Piece.King) {
-                if (newBoardColors[i] == turnColor) {
+        for (uint8 i = 0; i < 64; i++) {
+            if (boardPieces[i] == Piece.King) {
+                if (boardColors[i] == turnColor) {
                     newKingPosition = i;
                 } else {
                     newEnnemyKingPosition = i;
@@ -167,36 +158,36 @@ contract GameSystem is System {
             }
         }
 
-
         uint8[64][16] memory newEnnemyPseudoLegalMoves; // 16 pieces
         uint8[64][16] memory newPseudoLegalMoves;
 
-        uint8 index = 0;
-        for (uint8 i; i < 64; i++) {
-            if (newBoardPieces[i] != Piece.Empty) {
-                if (newBoardColors[i] == turnColor) {
-                    newPseudoLegalMoves[index] = getPseudoLegalMoves(newBoardPieces[i], 65, 65, i);
-                    index++;
+        uint8 ind = 0;
+        uint8 indEnnemy = 0;
+        for (uint8 i = 0; i < 64; i++) {
+            if (boardPieces[i] != Piece.Empty) {
+                if (boardColors[i] == turnColor) {
+                    newPseudoLegalMoves[ind] = getPseudoLegalMoves(boardPieces[i], from, to, i);
+                    ind++;
                 } else {
-                    newEnnemyPseudoLegalMoves[index] = getPseudoLegalMoves(newBoardPieces[i], 65, 65, i);
-                    index++;
+                    newEnnemyPseudoLegalMoves[indEnnemy] = getPseudoLegalMoves(boardPieces[i], from, to, i);
+                    indEnnemy++;
                 }
-                if (index == 16) {
+                if (ind == 16 && indEnnemy == 16) {
                     break;
                 }
             }
         }
         
-        for (uint i; i < 16; i++) {
-            for (uint j; j < 64; j++) {
+        for (uint i = 0; i < 16; i++) {
+            for (uint j = 0; j < 64; j++) {
                 if (newEnnemyPseudoLegalMoves[i][j] == newKingPosition) {
                     // the king of the color that made the move is in check after the move
                     revert("King is in check"); // =  discovered check or not reacting to check
                 }
             }
         }
-        for (uint i; i < 16; i++) {
-            for (uint j; j < 64; j++) {
+        for (uint i = 0; i < 16; i++) {
+            for (uint j = 0; j < 64; j++) {
                 if (newPseudoLegalMoves[i][j] == newEnnemyKingPosition) {
                     // the king of the color that did not make the move is in check after the move, so it may be checkmate
                     // if (isWin()) {
@@ -207,17 +198,11 @@ contract GameSystem is System {
             }
         }
 
-
-
-
         // now we know the move is legal, so we can update the board
-        // boardPieces[to] = movingPiece;
-        // boardColors[to] = turnColor;
-        // boardPieces[from] = Piece.Empty;
-        // boardColors[from] = Color.Empty;
-        // Turn.set(turnColor == Color.White ? Color.Black : Color.White);
-
-        return (newBoardPieces, newBoardColors);
+        Turn.set(turnColor == Color.White ? Color.Black : Color.White);
+        GameBoard.setPiece(to, movingPiece);
+        GameBoard.setColor(to, turnColor);
+        GameBoard.setPiece(from, Piece.Empty);
+        GameBoard.setColor(from, Color.Empty);
     }
-    
 }

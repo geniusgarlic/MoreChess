@@ -1,22 +1,28 @@
-import { useComponentValue, useEntityQuery, useRow } from "@latticexyz/react";
+import { useRows } from "@latticexyz/react";
 import { useMUD } from "./MUDContext";
 import ChessBoard from './ChessBoard';
-import { useState } from "react";
-import Web3 from 'web3';
+import { useState, useEffect, useCallback } from "react";
+
+import { Piece, Color } from './enumTypes';
 
 type BoardContent = { type: 'text' | 'img', value: string } | null;
 
 function App() {
   const {
-    components: { BoardState },
+    components: { 
+      GameBoard,
+      Turn,
+     },
     systemCalls: { 
       startGame,
-      getBoard },
+      getBoard,
+      movePiece
+    },
     network: { storeCache },
   } = useMUD();
   
-  var boardData = useRow(storeCache, {table: "BoardState", key: {}}); //boardData?.value
-  var stringArray = (boardData?.value.value || []).map(bytes32 => Web3.utils.hexToAscii(bytes32).replace(/\x00/g, ''));
+
+  const boardData = useRows(storeCache, {table: "GameBoard"});
 
   // white + black (pawn, knight, bishop, rook, queen, king) (0 is white pawn, 1 black pawn, 2 white knight, etc.)
   const pieceURLs = [
@@ -34,25 +40,11 @@ function App() {
     "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Chess_kdt45.svg/1024px-Chess_kdt45.svg.png"
   ];
 
-  const pieceTypes = ['Pawn', 'Knight', 'Bishop', 'Rook', 'Queen', 'King'];
-  const pieceColors = ['0', '1'];
-
-  const getPieceUrl = (pieceString: string) => {
-      if (!pieceString) {
-        return null;
+  const getPieceUrl = (item: any) => { // piece & color are numbers (format is {piece, color})
+      if (item.piece == 6) {
+        return "";
       }
-
-      const [color, type] = pieceString.split(' ');
-      const colorIndex = pieceColors.indexOf(color);
-      const typeIndex = pieceTypes.indexOf(type);
-
-      if(colorIndex === -1 || typeIndex === -1) {
-          throw new Error('Invalid piece string');
-      }
-
-      const urlIndex = typeIndex * 2 + colorIndex;
-
-      return pieceURLs[urlIndex];
+      return pieceURLs[(item.piece * 2) + item.color];
   };
 
 
@@ -85,7 +77,7 @@ function App() {
       return;
     }
 
-    newBoard = addToBoard(toRow, toCol, 'img', "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Chess_rlt45.svg/1024px-Chess_rlt45.svg.png");
+    newBoard = addToBoard(toRow, toCol, 'img', getPieceUrl(boardData[from].value));
     newBoard[fromRow][fromCol] = null;
     setBoard(newBoard);
   };
@@ -95,24 +87,23 @@ function App() {
     setBoard(newBoard);
   };
 
-  const renderBoardData = (data: string[]) => {
-    
-
+  const renderBoardData = () => {
     const newBoard = JSON.parse(JSON.stringify(board));
     
-    data.forEach((item, index) => {
+    boardData.forEach((item, index) => {
       const row = Math.floor(index / 8);
       const col = index % 8;
-      newBoard[row][col] = { type: 'img', value: getPieceUrl(item) };
+      const url = getPieceUrl(item.value);
+      if (url != "") {
+        newBoard[row][col] = { type: 'img', value: getPieceUrl(item.value) };
+      }
     });
-    
     setBoard(newBoard);
   };
 
+
   return (
     <div className="App">
-
-
         <div>
           <ChessBoard 
             renderSquare={(row, col) => {
@@ -140,15 +131,21 @@ function App() {
           Load Pieces
         </button>
 
-        <button onClick={() => renderBoardData(stringArray)}>
+        <button onClick={() => renderBoardData()}>
           Start Game
         </button>
 
-        <button onClick={() => clearBoard()}>
-          Clear Board
+        <button onClick={() => {
+          console.log(boardData);
+          console.log(boardData[60].value);
+          }}>
+          log
         </button>
 
-        <button onClick={() => moveTo(0, 58)}>
+        <button onClick={() => {
+          movePiece(8, 16);
+          moveTo(8, 16);
+        }}>
           Move test
         </button>
       </div>

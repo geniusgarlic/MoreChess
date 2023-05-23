@@ -2,13 +2,10 @@
 pragma solidity >=0.8.0;
 
 import { System } from "@latticexyz/world/src/System.sol";
-import { IRule } from "../rules/IRule.sol";
-import { Classic } from "../rules/Classic.sol";
 import { getUniqueEntity } from "@latticexyz/world/src/modules/uniqueentity/getUniqueEntity.sol";
 import { StructLibrary } from "../StructLibrary.sol";
 
 import { GameBoard } from "../codegen/Tables.sol";
-import { Turn } from "../codegen/Tables.sol";
 
 import { Piece, Color } from "../codegen/Types.sol";
 
