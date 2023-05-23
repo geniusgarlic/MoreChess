@@ -38,7 +38,7 @@ contract KingSystem is System {
             }
 
             if(move > 63){ // if the move is off the board (move < 0 is not possible because of the uint8 type)
-                break;
+                continue;
             }
 
             if (move == from) { // identical to (GameBoard.get(move).piece == Piece.Empty)
@@ -47,19 +47,19 @@ contract KingSystem is System {
             } else if (move == to) { // depends on the color of the piece
                 if (to == pieceSquare) { // we have to get the color from the old position, .get(pieceSquare) would give a wrong result
                     if (GameBoard.get(from).color == GameBoard.get(from).color) {  // same color
-                        break;
+                        continue;
                     } else {  // different color
                         moves[indCnt] = move;
                         indCnt++;
-                        break;
+                        continue;
                     }
                 } else {
                     if (GameBoard.get(pieceSquare).color == GameBoard.get(from).color) {  // same color
-                        break;
+                        continue;
                     } else {  // different color
                         moves[indCnt] = move;
                         indCnt++;
-                        break;
+                        continue;
                     }
                 }
             } else {
@@ -70,9 +70,9 @@ contract KingSystem is System {
                 } else if(GameBoard.get(move).color != GameBoard.get(pieceSquare).color) {  // if the square contains an enemy piece
                     moves[indCnt] = move;
                     indCnt++;
-                    break;
+                    continue;
                 } else { // if the square has a friendly piece
-                    break;
+                    continue;
                 }
             }
         }

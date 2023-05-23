@@ -33,7 +33,7 @@ contract PawnSystem is System {
                     moveArray = [pieceSquare + 7, pieceSquare + 9, pieceSquare + 8, 66];
                 }
             } else {
-                if (pieceSquare > 48) { // the pawn has not moved yet
+                if (pieceSquare > 47) { // the pawn has not moved yet
                     moveArray = [pieceSquare - 7, pieceSquare - 9, pieceSquare - 8, pieceSquare - 16];
                 } else {
                     moveArray = [pieceSquare - 7, pieceSquare - 9, pieceSquare - 8, 66];
