@@ -14,17 +14,12 @@ export function createSystemCalls(
     await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
   };
 
-  const getBoard = async () => {
-    const tx = await worldSend("getBoard", []);
-    await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
-  };
-
   const movePiece = async (from: number, to: number) => {
     const tx = await worldSend("movePiece", [from, to]);
     await awaitStreamValue(txReduced$, (txHash) => txHash === tx.hash);
   };
 
   return {
-    startGame, getBoard, movePiece
+    startGame, movePiece
   };
 }

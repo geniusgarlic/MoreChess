@@ -79,7 +79,7 @@ contract GameSystem is System {
         }
     }
 
-    function getBoard() public view returns (Piece[64] memory, Color[64] memory) {
+    function getBoard() private view returns (Piece[64] memory, Color[64] memory) {
         Piece[64] memory boardPieces;
         Color[64] memory boardColors;
         for (uint8 i = 0; i < 64; i++) {

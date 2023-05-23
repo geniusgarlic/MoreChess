@@ -15,7 +15,6 @@ function App() {
      },
     systemCalls: { 
       startGame,
-      getBoard,
       movePiece
     },
     network: { storeCache },
@@ -23,6 +22,7 @@ function App() {
   
 
   const boardData = useRows(storeCache, {table: "GameBoard"});
+  const [lastClickedSquare, setLastClickedSquare] = useState<number | null>(null);
 
   // white + black (pawn, knight, bishop, rook, queen, king) (0 is white pawn, 1 black pawn, 2 white knight, etc.)
   const pieceURLs = [
@@ -112,23 +112,19 @@ function App() {
               if (content.type === 'text') return <p className="text-center text-white">{content.value}</p>;
               if (content.type === 'img') return <img src={content.value} width={75} height={75} alt="" className="h-full w-full object-cover" />;
               return null;
-            }} 
+            }}
+            onSquareClick={(squareIndex) => {
+              setLastClickedSquare(squareIndex);
+            }}
+            lastClickedSquare={lastClickedSquare}
           />
         </div>
         
 
       <div className="grid absolute left-0">
 
-        <button onClick={() => addToBoard(0, 0, 'img', "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Chess_rlt45.svg/1024px-Chess_rlt45.svg.png")}>
-          Add image to (0, 0)
-        </button>
-
-        <button onClick={() => clearSquare(0, 0)}>
-          Clear (0, 0)
-        </button>
-
         <button onClick={() => startGame()}>
-          Load Pieces
+          Start Position / Reset
         </button>
 
         <button onClick={() => renderBoardData()}>
@@ -139,7 +135,7 @@ function App() {
           console.log(boardData);
           console.log(boardData[60].value);
           }}>
-          log
+          Log
         </button>
 
         <button onClick={() => {
