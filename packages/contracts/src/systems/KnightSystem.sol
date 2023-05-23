@@ -19,23 +19,24 @@ contract KnightSystem is System {
         unchecked {
         for(uint8 i = 0; i < 8; i++){ // once for each direction
             uint8 move = 0;
-            if(i == 0){
-                move = pieceSquare + 6;
-            } else if(i == 1){
-                move = pieceSquare + 10;
-            } else if(i == 2){
-                move = pieceSquare - 6;
-            } else if(i == 3){
-                move = pieceSquare - 10;
-            } else if(i == 4){
-                move = pieceSquare + 15;
-            } else if(i == 5){
-                move = pieceSquare - 17;
-            } else if(i == 6){
-                move = pieceSquare - 15;
-            } else if(i == 7){
-                move = pieceSquare + 17;
-            }
+            // if(i == 0){
+            //     move = pieceSquare + 6;
+            // } else if(i == 1){
+            //     move = pieceSquare + 10;
+            // } else if(i == 2){
+            //     move = pieceSquare - 6;
+            // } else if(i == 3){
+            //     move = pieceSquare - 10;
+            // } else if(i == 4){
+            //     move = pieceSquare + 15;
+            // } else if(i == 5){
+            //     move = pieceSquare - 17;
+            // } else if(i == 6){
+            //     move = pieceSquare - 15;
+            // } else if(i == 7){
+            //     move = pieceSquare + 17;
+            // }
+            move = 24 + i;
 
             if(move > 63){ // if the move is off the board (move < 0 is not possible because of the uint8 type)
                 continue;
